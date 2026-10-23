@@ -1,21 +1,18 @@
-const core = require("@actions/core");
-const {
+import { info, setFailed, setOutput, warning } from "@actions/core";
+import {
   getActionInputs,
   getHeadTag,
   getTagsForRepo,
   isValidEventType,
   valueExistsAsTag,
-} = require("../src/github");
-const {
-  calculateNewTag,
-  sortTags,
-} = require("../src/semver");
+} from "./github.js";
+import { calculateNewTag, sortTags } from "./semver.js";
 
 async function run() {
   try {
     if (!isValidEventType()) {
-      core.setFailed(
-        "Invalid event specified, it should be used on [pull_request, pull_request_target, workflow_dispatch] events."
+      setFailed(
+        "Invalid event specified, it should be used on [pull_request, pull_request_target, workflow_dispatch] events.",
       );
       return;
     }
@@ -27,20 +24,20 @@ async function run() {
     ]);
 
     const newTag = await generateSemverTag(
-          inputs.github_token,
-          inputs.increment,
-          inputs.default_to_highest
-        );
+      inputs.github_token,
+      inputs.increment,
+      inputs.default_to_highest,
+    );
 
     if (!newTag) {
-      core.setFailed("No new tag could be created.");
+      setFailed("No new tag could be created.");
       return;
     }
 
-    core.info(`Setting output value "version" as new tag value ${newTag}.`);
-    core.setOutput("version", newTag);
+    info(`Setting output value "version" as new tag value ${newTag}.`);
+    setOutput("version", newTag);
   } catch (error) {
-    core.setFailed(error.message);
+    setFailed(error.message);
   }
 }
 
@@ -53,23 +50,23 @@ async function generateSemverTag(token, increment, defaultToGreatest) {
 
   let currentTag;
   if (defaultToGreatest) {
-    core.info("Finding highest repository SemVer tag.");
+    info("Finding highest repository SemVer tag.");
     currentTag = sortTags(tags).shift();
   } else {
-    core.info("Getting head SHA SemVer tag.");
-    currentTag = getHeadTag(tags)
+    info("Getting head SHA SemVer tag.");
+    currentTag = getHeadTag(tags);
   }
 
   if (!currentTag) {
-    core.warning("No usable tag found on repository.");
+    warning("No usable tag found on repository.");
     return calculateNewTag("0.0.0", increment);
   }
 
   const newTag = calculateNewTag(currentTag.semver, increment);
 
-  core.info(`Checking if new tag value ${newTag} already exists as tag.`);
+  info(`Checking if new tag value ${newTag} already exists as tag.`);
   if (valueExistsAsTag(tags, newTag)) {
-    core.setFailed(`Value ${newTag} already exists as tag`);
+    setFailed(`Value ${newTag} already exists as tag`);
     return;
   }
 
