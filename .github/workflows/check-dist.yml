@@ -7,4 +7,4 @@ jobs:
   diff:
     uses: UKHomeOffice/sas-github-workflows/.github/workflows/actions-check-dist.yml@v2
     with:
-      nodeVersionMatrix: '[ "20.x" ]'
+      nodeVersionMatrix: '[ "24.x" ]'
