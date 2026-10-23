@@ -40049,7 +40049,10 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token, options));
 }
 //# sourceMappingURL=github.js.map
+// EXTERNAL MODULE: ./node_modules/semver/index.js
+var semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./src/github.js
+
 
 
 
@@ -40071,7 +40074,7 @@ async function getTagsForRepo(token) {
 
 function getHeadTag(tags) {
   const headSha = getHeadRefSha();
-  return tags.find((tag) => tag.sha === headSha);
+  return tags.find((tag) => tag.sha === headSha && semver.valid(tag.semver));
 }
 
 function getHeadRefSha({ context } = { context: github_context }) {
@@ -40082,8 +40085,8 @@ function getHeadRefSha({ context } = { context: github_context }) {
   }
 }
 
-function valueExistsAsTag(tags, semver) {
-  return tags.some((tag) => tag.semver === semver);
+function valueExistsAsTag(tags, semverValue) {
+  return tags.some((tag) => tag.semver === semverValue);
 }
 
 const isValidEventType = () => {
@@ -40112,8 +40115,6 @@ const getActionInputs = (variables) => {
 
 
 
-// EXTERNAL MODULE: ./node_modules/semver/index.js
-var semver = __nccwpck_require__(2088);
 ;// CONCATENATED MODULE: ./src/semver.js
 
 

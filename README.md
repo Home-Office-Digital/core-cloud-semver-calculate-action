@@ -2,6 +2,14 @@
 
 Action that identifies the latest SemVer tag and increments it.
 
+### Tag selection
+
+Only valid SemVer tags, such as `1.2.3` or `v1.2.3`, are used to calculate the next version. Tags with custom prefixes, such as `myproject-release-0.0.1`, are ignored; their version suffix is not extracted.
+
+By default, the action selects a valid SemVer tag on the pull request's base commit, or the workflow commit for `workflow_dispatch`. When `default_to_highest` is enabled, it selects the highest valid SemVer tag from the retrieved repository tags instead.
+
+If no usable tag is found, the action increments `0.0.0`. For example, a `patch` increment produces `0.0.1`. The `version` output is a SemVer value without a `v` or custom prefix.
+
 ### All input options
 
 | Input                                                               | Description                                                                 | Default               | Required |

@@ -1,5 +1,6 @@
 import { context as githubContext, getOctokit } from "@actions/github";
 import { getInput, info } from "@actions/core";
+import semver from "semver";
 
 async function getTagsForRepo(token) {
   info("Getting tags from repository.");
@@ -19,7 +20,7 @@ async function getTagsForRepo(token) {
 
 function getHeadTag(tags) {
   const headSha = getHeadRefSha();
-  return tags.find((tag) => tag.sha === headSha);
+  return tags.find((tag) => tag.sha === headSha && semver.valid(tag.semver));
 }
 
 function getHeadRefSha({ context } = { context: githubContext }) {
@@ -30,8 +31,8 @@ function getHeadRefSha({ context } = { context: githubContext }) {
   }
 }
 
-function valueExistsAsTag(tags, semver) {
-  return tags.some((tag) => tag.semver === semver);
+function valueExistsAsTag(tags, semverValue) {
+  return tags.some((tag) => tag.semver === semverValue);
 }
 
 const isValidEventType = () => {
