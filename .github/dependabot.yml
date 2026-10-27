@@ -1,44 +1,45 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "⬆️ "
-    pull-request-branch-name:
-      separator: "-"
-    reviewers:
-      - "UKHomeOffice/core-cloud-devops"
-    groups:
-      actions-minor:
-        update-types:
-          - 'minor'
-          - 'patch'
-    labels:
-      - "patch"
-      - "dependencies"
+    # Enable Github Action updates
+    - package-ecosystem: "github-actions"
+      directory: "/"
+      schedule:
+          interval: "daily"
+      commit-message:
+          prefix: "chore(GHA)"
+      labels:
+          - "dependencies"
+          - "patch"
+          - "actions"
+      groups:
+          # One group for everything, majors included, since an action
+          # major is usually just a runtime bump
+          github-actions-all:
+              patterns:
+                  - "*"
+              update-types:
+                  - "minor"
+                  - "patch"
+                  - "major"
 
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-    commit-message:
-      prefix: "⬆️ "
-    pull-request-branch-name:
-      separator: "-"
-    reviewers:
-      - "UKHomeOffice/core-cloud-devops"
-    groups:
-      npm-development:
-        dependency-type: 'development'
-        update-types:
-          - 'minor'
-          - 'patch'
-      npm-production:
-        dependency-type: 'production'
-        update-types:
-          - 'patch'
-    labels:
-      - "patch"
-      - "dependencies"
+    # Enable NPM updates
+    - package-ecosystem: "npm"
+      directory: "/"
+      schedule:
+          interval: "daily"
+      commit-message:
+          prefix: "chore(Node)"
+      labels:
+          - "dependencies"
+          - "patch"
+          - "npm"
+      groups:
+          npm-security:
+              applies-to: security-updates
+              patterns:
+                  - "*"
+          npm-minor-and-patch:
+              applies-to: version-updates
+              update-types:
+                  - "minor"
+                  - "patch"
