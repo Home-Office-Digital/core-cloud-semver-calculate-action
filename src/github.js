@@ -1,15 +1,16 @@
-const github = require("@actions/github");
-const core = require("@actions/core");
+import { context as githubContext, getOctokit } from "@actions/github";
+import { getInput, info } from "@actions/core";
+import semver from "semver";
 
 async function getTagsForRepo(token) {
-  core.info("Getting tags from repository.");
+  info("Getting tags from repository.");
 
-  const { data: tags } = await github.getOctokit(token).rest.repos.listTags({
-    owner: github.context.payload.repository.owner.login,
-    repo: github.context.payload.repository.name,
+  const { data: tags } = await getOctokit(token).rest.repos.listTags({
+    owner: githubContext.payload.repository.owner.login,
+    repo: githubContext.payload.repository.name,
   });
 
-  core.info(`Retrieved ${tags.length} tags from repository.`);
+  info(`Retrieved ${tags.length} tags from repository.`);
 
   return tags.map((tag) => ({
     semver: tag.name,
@@ -18,11 +19,11 @@ async function getTagsForRepo(token) {
 }
 
 function getHeadTag(tags) {
-  const headSha = getHeadRefSha()
-  return tags.find((tag) => tag.sha === headSha);
+  const headSha = getHeadRefSha();
+  return tags.find((tag) => tag.sha === headSha && semver.valid(tag.semver));
 }
 
-function getHeadRefSha({ context } = github) {
+function getHeadRefSha({ context } = { context: githubContext }) {
   if (isPullRequest()) {
     return context.payload.pull_request.base?.sha;
   } else if (isWorkflowDispatch()) {
@@ -30,25 +31,25 @@ function getHeadRefSha({ context } = github) {
   }
 }
 
-function valueExistsAsTag(tags, semver) {
-  return tags.some((tag) => tag.semver === semver);
+function valueExistsAsTag(tags, semverValue) {
+  return tags.some((tag) => tag.semver === semverValue);
 }
 
 const isValidEventType = () => {
   return isPullRequest() || isWorkflowDispatch();
 };
 
-const isPullRequest = ({ context } = github) => {
+const isPullRequest = ({ context } = { context: githubContext }) => {
   return ["pull_request", "pull_request_target"].includes(context.eventName);
 };
 
-const isWorkflowDispatch = ({ context } = github) => {
+const isWorkflowDispatch = ({ context } = { context: githubContext }) => {
   return context.eventName === "workflow_dispatch";
 };
 
 const getActionInputs = (variables) => {
   return variables.reduce((obj, variable) => {
-    let value = core.getInput(variable.name, variable.options);
+    let value = getInput(variable.name, variable.options);
     if (!value) {
       if (variable.hasOwnProperty("default")) {
         value = variable.default;
@@ -58,7 +59,7 @@ const getActionInputs = (variables) => {
   }, {});
 };
 
-module.exports = {
+export {
   getActionInputs,
   getHeadTag,
   getTagsForRepo,
